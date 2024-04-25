@@ -27,3 +27,4 @@ halo==0.0.31
 termcolor==2.4.0
 sentry-sdk==1.45.0
 counterparty-rs==10.1.1
+influxdb-client==1.42.0

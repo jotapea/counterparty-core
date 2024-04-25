@@ -30,8 +30,10 @@ from counterpartycore.lib import (
     util,
 )
 from counterpartycore.lib import kickstart as kickstarter
-from counterpartycore.lib.telemetry.client import TelemetryClientLocal
-from counterpartycore.lib.telemetry.collector import TelemetryCollectorLive
+from counterpartycore.lib.telemetry.clients.influxdb import TelemetryClientInfluxDB
+from counterpartycore.lib.telemetry.collectors.influxdb import (
+    TelemetryCollectorInfluxDB,
+)
 from counterpartycore.lib.telemetry.daemon import TelemetryDaemon
 
 logger = logging.getLogger(config.LOGGER_NAME)
@@ -572,13 +574,14 @@ def start_all(catch_up="normal"):
         db = initialise_db()
         blocks.initialise(db)
 
-        telemetry_daemon = TelemetryDaemon(
-            interval=60,
-            collector=TelemetryCollectorLive(db=database.get_connection(read_only=True)),
-            client=TelemetryClientLocal(),
-        )
+        if os.environ.get("INFLUXDB_TOKEN") and os.environ.get("INFLUXDB_URL"):
+            telemetry_daemon = TelemetryDaemon(
+                interval=60,
+                collector=TelemetryCollectorInfluxDB(db=database.get_connection(read_only=True)),
+                client=TelemetryClientInfluxDB(),
+            )
 
-        telemetry_daemon.start()
+            telemetry_daemon.start()
 
         # Reset UTXO_LOCKS.  This previously was done in
         # initilise_config
