@@ -1,8 +1,9 @@
 x-bitcoind-common: &bitcoind-common
-  image: kylemanna/bitcoind:latest
+  build:
+    context: ./bitcoin
   stop_grace_period: 1m
   volumes:
-    - data:/bitcoin/.bitcoin
+    - data:/root/.bitcoin
   restart: unless-stopped
 
 x-addrindexrs-common: &addrindexrs-common
@@ -39,20 +40,6 @@ services:
       - mainnet
     ports: 
       - "8332:8332"
-    command: 
-      - "-chain=main"
-      - "-rpcallowip=0.0.0.0/0"
-      - "-rpcbind=0.0.0.0"
-      - "-rpcuser=rpc"
-      - "-rpcpassword=rpc"
-      - "-listen=1"
-      - "-server=1"
-      - "-printtoconsole=1"
-      - "-addresstype=legacy"
-      - "-txindex=1"
-      - "-prune=0"
-      - "-dbcache=4000"
-      - "-mempoolfullrbf=1"
 
   addrindexrs:
     <<: *addrindexrs-common
