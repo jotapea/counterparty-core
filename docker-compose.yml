@@ -71,7 +71,7 @@ services:
       - "--indexd-connect=addrindexrs"
       - "--rpc-host=0.0.0.0"
       - "--api-host=0.0.0.0"
-      - "--force"
+      # - "--force" # doing too many things, better directly force in code
       - "--catch-up=bootstrap"
       - "--verbose"
 

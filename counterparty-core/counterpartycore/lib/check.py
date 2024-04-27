@@ -948,7 +948,8 @@ def check_change(protocol_change, change_name):
 
 
 def software_version():
-    if config.FORCE:
+    if True:
+    # if config.FORCE:
         return
     logger.debug("Checking Counterparty version.")
 
