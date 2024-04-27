@@ -18,7 +18,6 @@ x-addrindexrs-common: &addrindexrs-common
 x-counterparty-common: &counterparty-common
   build:
     context: .
-    dockerfile: Dockerfile
   stop_grace_period: 1m
   volumes:
     - data:/root/.bitcoin
@@ -72,8 +71,9 @@ services:
       - "--indexd-connect=addrindexrs"
       - "--rpc-host=0.0.0.0"
       - "--api-host=0.0.0.0"
+      - "--force"
       - "--catch-up=bootstrap"
-      #- "--verbose"
+      - "--verbose"
 
   ###################
   # Testnet Services #
