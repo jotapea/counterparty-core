@@ -260,15 +260,15 @@ def add_to_journal(db, block_index, command, category, event, bindings):
     bindings_string = json.dumps(items, sort_keys=True, separators=(",", ":"))
     message_bindings = {
         "message_index": message_index,
+        "mensaje_index": mensaje_index,
         "block_index": block_index,
         "command": command,
         "category": category,
         "bindings": bindings_string,
         "timestamp": current_time,
         "event": event,
-        "mensaje_index": mensaje_index,
     }
-    query = """INSERT INTO messages VALUES (:message_index, :block_index, :command, :category, :bindings, :timestamp, :event, :mensaje_index)"""
+    query = """INSERT INTO messages VALUES (:message_index, :mensaje_index, :block_index, :command, :category, :bindings, :timestamp, :event)"""
     cursor.execute(query, message_bindings)
     cursor.close()
 

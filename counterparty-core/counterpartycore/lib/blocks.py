@@ -577,19 +577,19 @@ def initialise(db):
     # Messages
     cursor.execute("""CREATE TABLE IF NOT EXISTS messages(
                       message_index INTEGER PRIMARY KEY,
+                      mensaje_index INTEGER,
                       block_index INTEGER,
                       command TEXT,
                       category TEXT,
                       bindings TEXT,
                       timestamp INTEGER,
-                      event TEXT,
-                      mensaje_index INTEGER)
+                      event TEXT)
                   """)
     columns = [column["name"] for column in cursor.execute("""PRAGMA table_info(messages)""")]
-    if "event" not in columns:
-        cursor.execute("""ALTER TABLE messages ADD COLUMN event TEXT""")
     if "mensaje_index" not in columns:
         cursor.execute("""ALTER TABLE messages ADD COLUMN mensaje_index INTEGER""")
+    if "event" not in columns:
+        cursor.execute("""ALTER TABLE messages ADD COLUMN event TEXT""")
 
     # TODO: FOREIGN KEY (block_index) REFERENCES blocks(block_index) DEFERRABLE INITIALLY DEFERRED)
     database.create_indexes(
@@ -598,8 +598,8 @@ def initialise(db):
         [
             ["block_index"],
             ["block_index", "message_index"],
-            ["event"],
             ["mensaje_index"],
+            ["event"],
         ],
     )
 
