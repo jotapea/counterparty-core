@@ -229,6 +229,16 @@ def add_to_journal(db, block_index, command, category, event, bindings):
     except exceptions.DatabaseError:
         message_index = 0
 
+    # Get last mensaje index.
+    non_message_events = ["transaction_outputs", "transactions", "blocks"]
+    if category in non_message_events:
+        mensaje_index = None
+    else:
+        if message["mensaje_index"] is None:
+            mensaje_index = 0
+        else:
+            mensaje_index = message["mensaje_index"] + 1
+
     # Not to be misleading…
     if block_index == config.MEMPOOL_BLOCK_INDEX:
         try:
@@ -256,8 +266,9 @@ def add_to_journal(db, block_index, command, category, event, bindings):
         "bindings": bindings_string,
         "timestamp": current_time,
         "event": event,
+        "mensaje_index": mensaje_index,
     }
-    query = """INSERT INTO messages VALUES (:message_index, :block_index, :command, :category, :bindings, :timestamp, :event)"""
+    query = """INSERT INTO messages VALUES (:message_index, :block_index, :command, :category, :bindings, :timestamp, :event, :mensaje_index)"""
     cursor.execute(query, message_bindings)
     cursor.close()
 
