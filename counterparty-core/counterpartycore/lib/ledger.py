@@ -272,7 +272,11 @@ def add_to_journal(db, block_index, command, category, event, bindings):
     cursor.execute(query, message_bindings)
     cursor.close()
 
-    BLOCK_JOURNAL.append(f"{command}{category}{bindings_string}")
+    # practically, this is now an "events hash"
+    # BLOCK_JOURNAL.append(f"{command}{category}{bindings_string}")
+    # so, to replicate <v10 "messages hash"
+    if category not in non_message_events:
+        BLOCK_JOURNAL.append(f"{command}{category}{bindings_string}")
 
     log.log_event(event, items)
 
