@@ -67,6 +67,7 @@ def initialise(db):
                         tx_index INTEGER,
                         tx_hash TEXT,
                         block_index INTEGER,
+                        update_block_index INTEGER,
                         source TEXT,
                         possible_moves INTEGER,
                         wager INTEGER,
@@ -77,6 +78,12 @@ def initialise(db):
                         """
     # create table
     cursor.execute(create_rps_query)
+
+    # add new columns if not exist
+    columns = [column["name"] for column in cursor.execute("""PRAGMA table_info(rps)""")]
+    if "update_block_index" not in columns:
+        cursor.execute("ALTER TABLE rps ADD COLUMN update_block_index INTEGER")
+
     # migrate old table
     if database.field_is_pk(cursor, "rps", "tx_index"):
         database.copy_old_table(cursor, "rps", create_rps_query)
@@ -111,6 +118,7 @@ def initialise(db):
                                 tx0_block_index INTEGER,
                                 tx1_block_index INTEGER,
                                 block_index INTEGER,
+                                update_block_index INTEGER,
                                 tx0_expiration INTEGER,
                                 tx1_expiration INTEGER,
                                 match_expire_index INTEGER,
@@ -118,6 +126,12 @@ def initialise(db):
                                 """
     # create table
     cursor.execute(create_rps_matches_query)
+
+    # add new columns if not exist
+    columns = [column["name"] for column in cursor.execute("""PRAGMA table_info(rps_matches)""")]
+    if "update_block_index" not in columns:
+        cursor.execute("ALTER TABLE rps_matches ADD COLUMN update_block_index INTEGER")
+
     # migrate old table
     if database.field_is_pk(cursor, "rps_matches", "id"):
         database.copy_old_table(cursor, "rps_matches", create_rps_matches_query)

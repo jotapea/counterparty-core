@@ -52,6 +52,7 @@ def initialise(db):
                             tx_index INTEGER,
                             tx_hash TEXT,
                             block_index INTEGER,
+                            update_block_index INTEGER,
                             source TEXT,
                             give_asset TEXT,
                             give_quantity INTEGER,
@@ -69,6 +70,12 @@ def initialise(db):
                             """
     # create table
     cursor.execute(create_orders_query)
+
+    # add new columns if not exist
+    columns = [column["name"] for column in cursor.execute("""PRAGMA table_info(orders)""")]
+    if "update_block_index" not in columns:
+        cursor.execute("ALTER TABLE orders ADD COLUMN update_block_index INTEGER")
+
     # migrate old table
     if database.field_is_pk(cursor, "orders", "tx_index"):
         database.copy_old_table(cursor, "orders", create_orders_query)
@@ -78,6 +85,7 @@ def initialise(db):
         "orders",
         [
             ["block_index"],
+            ["update_block_index"],
             ["tx_index", "tx_hash"],
             ["give_asset"],
             ["tx_hash"],
@@ -104,6 +112,7 @@ def initialise(db):
                                     tx0_block_index INTEGER,
                                     tx1_block_index INTEGER,
                                     block_index INTEGER,
+                                    update_block_index INTEGER,
                                     tx0_expiration INTEGER,
                                     tx1_expiration INTEGER,
                                     match_expire_index INTEGER,
@@ -112,6 +121,12 @@ def initialise(db):
                                     """
     # create table
     cursor.execute(create_order_matches_query)
+
+    # add new columns if not exist
+    columns = [column["name"] for column in cursor.execute("""PRAGMA table_info(order_matches)""")]
+    if "update_block_index" not in columns:
+        cursor.execute("ALTER TABLE order_matches ADD COLUMN update_block_index INTEGER")
+
     # migrate old table
     if database.field_is_pk(cursor, "order_matches", "id"):
         database.copy_old_table(cursor, "order_matches", create_order_matches_query)
@@ -121,6 +136,7 @@ def initialise(db):
         "order_matches",
         [
             ["block_index"],
+            ["update_block_index"],
             ["forward_asset"],
             ["backward_asset"],
             ["id"],

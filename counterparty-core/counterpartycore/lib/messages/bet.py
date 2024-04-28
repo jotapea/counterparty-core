@@ -60,6 +60,7 @@ def initialise(db):
                         tx_index INTEGER,
                         tx_hash TEXT,
                         block_index INTEGER,
+                        update_block_index INTEGER,
                         source TEXT,
                         feed_address TEXT,
                         bet_type INTEGER,
@@ -77,6 +78,12 @@ def initialise(db):
                         """
     # create table
     cursor.execute(create_bets_query)
+
+    # add new columns if not exist
+    columns = [column["name"] for column in cursor.execute("""PRAGMA table_info(bets)""")]
+    if "update_block_index" not in columns:
+        cursor.execute("ALTER TABLE bets ADD COLUMN update_block_index INTEGER")
+
     # migrate old table
     if database.field_is_pk(cursor, "bets", "tx_index"):
         database.copy_old_table(cursor, "bets", create_bets_query)
@@ -86,6 +93,7 @@ def initialise(db):
         "bets",
         [
             ["block_index"],
+            ["update_block_index"],
             ["tx_index", "tx_hash"],
             ["status"],
             ["tx_hash"],
@@ -116,6 +124,7 @@ def initialise(db):
                                 tx0_block_index INTEGER,
                                 tx1_block_index INTEGER,
                                 block_index INTEGER,
+                                update_block_index INTEGER,
                                 tx0_expiration INTEGER,
                                 tx1_expiration INTEGER,
                                 match_expire_index INTEGER,
@@ -124,6 +133,12 @@ def initialise(db):
                                 """
     # create table
     cursor.execute(create_bet_matches_query)
+
+    # add new columns if not exist
+    columns = [column["name"] for column in cursor.execute("""PRAGMA table_info(bet_matches)""")]
+    if "update_block_index" not in columns:
+        cursor.execute("ALTER TABLE bet_matches ADD COLUMN update_block_index INTEGER")
+
     # migrate old table
     if database.field_is_pk(cursor, "bet_matches", "id"):
         database.copy_old_table(cursor, "bet_matches", create_bet_matches_query)
@@ -133,6 +148,7 @@ def initialise(db):
         "bet_matches",
         [
             ["block_index"],
+            ["update_block_index"],
             ["id"],
             ["status"],
             ["deadline"],
