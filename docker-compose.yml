@@ -72,7 +72,7 @@ services:
       - "--rpc-host=0.0.0.0"
       - "--api-host=0.0.0.0"
       # - "--force" # doing too many things, better directly force in code
-      - "--catch-up=bootstrap"
+      # - "--catch-up=bootstrap"
       - "--verbose"
 
   ###################
