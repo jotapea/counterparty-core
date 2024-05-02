@@ -144,6 +144,13 @@ services:
     ports: 
       - "3000:3000"
 
+  # flask app
+  counterparty-core_app:
+    build:
+      context: ./counterparty-core_app
+    ports: 
+      - "3001:3001"
+
 
 volumes: 
   data:
