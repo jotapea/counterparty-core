@@ -1,7 +1,7 @@
 
 FROM ubuntu:22.04
 
-# Node.js nvm install (https://stackoverflow.com/a/57546198)
+# nodejs nvm install (https://stackoverflow.com/a/57546198)
 
 RUN apt-get update && apt-get install -y wget
 
