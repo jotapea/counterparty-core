@@ -137,6 +137,14 @@ services:
       - "--catch-up=bootstrap"
       #- "--verbose"
 
+  # xcp app
+  xcpdev:
+    build:
+      context: ./xcpdev
+    ports: 
+      - "3000:3000"
+
+
 volumes: 
   data:
     driver: local
