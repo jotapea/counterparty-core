@@ -19,19 +19,13 @@ ENV PATH="/root/.nvm/versions/node/v${NODE_VERSION}/bin/:${PATH}"
 RUN node --version
 RUN npm --version
 
+# copy app files, install and run
+
 RUN mkdir /app
-# RUN mkdir /express-docker
-
 COPY . /app
-# COPY . /express-docker/
-# COPY package.json /express-docker/package.json
-# COPY index.js /express-docker/index.js
-
 WORKDIR /app
-# WORKDIR /express-docker
 
 RUN npm install
 
 EXPOSE 3001
-
 CMD [ "node", "index.js" ]

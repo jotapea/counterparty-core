@@ -139,7 +139,6 @@ services:
 
   # python (flask) app
   app_flask:
-  # counterparty-core_app:
     build:
       context: ./apps/python
     ports: 
@@ -147,7 +146,6 @@ services:
 
   # nodejs (express) app
   app_express:
-  # xcpdev:
     build:
       context: ./apps/nodejs
     ports: 
