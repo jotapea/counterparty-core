@@ -980,6 +980,10 @@ def follow(db):
                 if current_index == config.BLOCK_FIRST:
                     break
 
+                # Backwards check only if close to tip.
+                if block_index < block_count - 10:
+                    break
+
                 logger.debug(f"Checking that block {current_index} is not an orphan.")
                 # Backend parent hash.
                 current_hash = backend.getblockhash(current_index)
