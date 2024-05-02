@@ -1,7 +1,7 @@
 
 FROM ubuntu:22.04
 
-# Nodejs nvm install (https://stackoverflow.com/a/57546198)
+# Node.js nvm install (https://stackoverflow.com/a/57546198)
 
 RUN apt-get update && apt-get install -y wget
 
@@ -19,13 +19,19 @@ ENV PATH="/root/.nvm/versions/node/v${NODE_VERSION}/bin/:${PATH}"
 RUN node --version
 RUN npm --version
 
-RUN mkdir /express-docker
-COPY package.json /express-docker/package.json
-COPY index.js /express-docker/index.js
-WORKDIR /express-docker
+RUN mkdir /app
+# RUN mkdir /express-docker
+
+COPY . /app
+# COPY . /express-docker/
+# COPY package.json /express-docker/package.json
+# COPY index.js /express-docker/index.js
+
+WORKDIR /app
+# WORKDIR /express-docker
 
 RUN npm install
 
-EXPOSE 3000
+EXPOSE 3001
 
 CMD [ "node", "index.js" ]

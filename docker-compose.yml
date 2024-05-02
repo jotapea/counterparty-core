@@ -137,17 +137,19 @@ services:
       - "--catch-up=bootstrap"
       #- "--verbose"
 
-  # xcp app
-  xcpdev:
+  # python (flask) app
+  app_flask:
+  # counterparty-core_app:
     build:
-      context: ./xcpdev
+      context: ./apps/python
     ports: 
       - "3000:3000"
 
-  # flask app
-  counterparty-core_app:
+  # nodejs (express) app
+  app_express:
+  # xcpdev:
     build:
-      context: ./counterparty-core_app
+      context: ./apps/nodejs
     ports: 
       - "3001:3001"
 
