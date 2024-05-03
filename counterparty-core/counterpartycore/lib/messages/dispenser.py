@@ -44,6 +44,7 @@ def initialise(db):
     create_dispensers_query = """CREATE TABLE IF NOT EXISTS dispensers(
                                 tx_index INTEGER,
                                 tx_hash TEXT,
+                                tx_index_block INTEGER,
                                 block_index INTEGER,
                                 source TEXT,
                                 asset TEXT,
@@ -62,6 +63,8 @@ def initialise(db):
 
     # add new columns if not exist
     columns = [column["name"] for column in cursor.execute("""PRAGMA table_info(dispensers)""")]
+    if "tx_index_block" not in columns:
+        cursor.execute("ALTER TABLE dispensers ADD COLUMN tx_index_block INTEGER")
     if "oracle_address" not in columns:
         cursor.execute("ALTER TABLE dispensers ADD COLUMN oracle_address TEXT")
     if "last_status_tx_hash" not in columns:
@@ -84,6 +87,7 @@ def initialise(db):
         cursor,
         "dispensers",
         [
+            ["tx_index_block"],
             ["block_index"],
             ["source"],
             ["asset"],
@@ -588,6 +592,7 @@ def parse(db, tx, message):
                         bindings = {
                             "tx_index": tx["tx_index"],
                             "tx_hash": tx["tx_hash"],
+                            "tx_index_block": tx["block_index"],
                             "block_index": tx["block_index"],
                             "source": action_address,
                             "asset": asset,

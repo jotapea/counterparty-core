@@ -51,6 +51,7 @@ def initialise(db):
     create_orders_query = """CREATE TABLE IF NOT EXISTS orders(
                             tx_index INTEGER,
                             tx_hash TEXT,
+                            tx_index_block INTEGER,
                             block_index INTEGER,
                             source TEXT,
                             give_asset TEXT,
@@ -72,6 +73,8 @@ def initialise(db):
 
     # add new columns if not exist
     columns = [column["name"] for column in cursor.execute("""PRAGMA table_info(orders)""")]
+    if "tx_index_block" not in columns:
+        cursor.execute("ALTER TABLE orders ADD COLUMN tx_index_block INTEGER")
 
     # migrate old table
     if database.field_is_pk(cursor, "orders", "tx_index"):
@@ -81,6 +84,7 @@ def initialise(db):
         cursor,
         "orders",
         [
+            ["tx_index_block"],
             ["block_index"],
             ["tx_index", "tx_hash"],
             ["give_asset"],
@@ -107,6 +111,7 @@ def initialise(db):
                                     backward_quantity INTEGER,
                                     tx0_block_index INTEGER,
                                     tx1_block_index INTEGER,
+                                    tx1_index_block INTEGER,
                                     block_index INTEGER,
                                     tx0_expiration INTEGER,
                                     tx1_expiration INTEGER,
@@ -119,6 +124,8 @@ def initialise(db):
 
     # add new columns if not exist
     columns = [column["name"] for column in cursor.execute("""PRAGMA table_info(order_matches)""")]
+    if "tx1_index_block" not in columns:
+        cursor.execute("ALTER TABLE order_matches ADD COLUMN tx1_index_block INTEGER")
 
     # migrate old table
     if database.field_is_pk(cursor, "order_matches", "id"):
@@ -128,6 +135,7 @@ def initialise(db):
         cursor,
         "order_matches",
         [
+            ["tx1_index_block"],
             ["block_index"],
             ["forward_asset"],
             ["backward_asset"],
@@ -587,6 +595,7 @@ def parse(db, tx, message):
     bindings = {
         "tx_index": tx["tx_index"],
         "tx_hash": tx["tx_hash"],
+        "tx_index_block": tx["block_index"],
         "block_index": tx["block_index"],
         "source": tx["source"],
         "give_asset": give_asset,
@@ -927,6 +936,7 @@ def match(db, tx, block_index=None):
                 "backward_quantity": backward_quantity,
                 "tx0_block_index": tx0["block_index"],
                 "tx1_block_index": tx1["block_index"],
+                "tx1_index_block": block_index,
                 "block_index": block_index,
                 "tx0_expiration": tx0["expiration"],
                 "tx1_expiration": tx1["expiration"],
