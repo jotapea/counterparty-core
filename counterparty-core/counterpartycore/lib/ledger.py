@@ -1597,8 +1597,7 @@ def insert_update(db, table_name, id_name, id_value, update_data, event, event_i
     for key, value in update_data.items():
         new_record[key] = value
     # new block_index and tx_index
-    # new_record["block_index"] = util.CURRENT_BLOCK_INDEX
-    new_record["update_block_index"] = util.CURRENT_BLOCK_INDEX
+    new_record["block_index"] = util.CURRENT_BLOCK_INDEX
     # let's keep the original tx_index so we can preserve order
     # with the old queries (ordered by default by old primary key)
     # TODO: restore with protocol change and checkpoints update

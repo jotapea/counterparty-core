@@ -45,7 +45,6 @@ def initialise(db):
                                 tx_index INTEGER,
                                 tx_hash TEXT,
                                 block_index INTEGER,
-                                update_block_index INTEGER,
                                 source TEXT,
                                 asset TEXT,
                                 give_quantity INTEGER,
@@ -63,8 +62,6 @@ def initialise(db):
 
     # add new columns if not exist
     columns = [column["name"] for column in cursor.execute("""PRAGMA table_info(dispensers)""")]
-    if "update_block_index" not in columns:
-        cursor.execute("ALTER TABLE dispensers ADD COLUMN update_block_index INTEGER")
     if "oracle_address" not in columns:
         cursor.execute("ALTER TABLE dispensers ADD COLUMN oracle_address TEXT")
     if "last_status_tx_hash" not in columns:
@@ -88,7 +85,6 @@ def initialise(db):
         "dispensers",
         [
             ["block_index"],
-            ["update_block_index"],
             ["source"],
             ["asset"],
             ["tx_index"],
