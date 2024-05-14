@@ -237,6 +237,7 @@ def parse_block(
     txlist_hash=None,
     previous_messages_hash=None,
     reparsing=False,
+    start_time=None
 ):
     """Parse the block, return hash of new ledger, txlist and messages.
 
@@ -311,6 +312,10 @@ def parse_block(
         db, "messages_hash", previous_messages_hash, ledger.BLOCK_JOURNAL
     )
 
+    duration = None
+    if start_time:
+        duration = time.time() - start_time
+
     ledger.add_to_journal(
         db,
         block_index,
@@ -322,6 +327,7 @@ def parse_block(
             "ledger_hash": new_ledger_hash,
             "txlist_hash": new_txlist_hash,
             "messages_hash": new_messages_hash,
+            "duration": duration
         },
     )
 
@@ -1084,7 +1090,8 @@ def follow(db):
 
                 # Parse the transactions in the block.
                 new_ledger_hash, new_txlist_hash, new_messages_hash, found_messages_hash = (
-                    parse_block(db, block_index, block_time)
+                    parse_block(db, block_index, block_time, start_time=start_time)
+                    # parse_block(db, block_index, block_time)
                 )
 
             # When newly caught up, check for conservation of assets.
