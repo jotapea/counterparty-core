@@ -387,6 +387,7 @@ def initialise(db):
         [
             ["block_index"],
             ["block_index", "block_hash"],
+            ["block_time"],
         ],
     )
 
