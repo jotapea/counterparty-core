@@ -249,7 +249,8 @@ def add_to_journal(db, block_index, command, category, event, bindings):
         message_index = 0
 
     # Get last mensaje index.
-    non_message_events = ["transaction_outputs", "transactions", "blocks"]
+    non_message_events = ["assets", "transaction_outputs", "transactions", "blocks"]
+    # non_message_events = ["transaction_outputs", "transactions", "blocks"]
     if category in non_message_events:
         mensaje_index = None
     else:
