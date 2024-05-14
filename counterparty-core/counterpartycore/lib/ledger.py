@@ -36,6 +36,25 @@ def last_message(db):
     return last_message
 
 
+def last_mensaje(db):
+    """Return latest mensaje from the db."""
+    cursor = db.cursor()
+    query = """
+        SELECT * FROM messages
+        WHERE mensaje_index = (
+            SELECT MAX(mensaje_index) from messages
+        )
+    """
+    mensajes = list(cursor.execute(query))
+    if mensajes:
+        assert len(mensajes) == 1
+        last_mensaje = mensajes[0]
+    else:
+        raise exceptions.DatabaseError("No mensajes found.")
+    cursor.close()
+    return last_mensaje
+
+
 def get_messages(db, block_index=None, block_index_in=None, message_index_in=None):
     cursor = db.cursor()
     where = []
@@ -234,10 +253,11 @@ def add_to_journal(db, block_index, command, category, event, bindings):
     if category in non_message_events:
         mensaje_index = None
     else:
-        if message["mensaje_index"] is None:
+        try:
+            last_mensaje_message = last_mensaje(db)
+            mensaje_index = last_mensaje_message["mensaje_index"] + 1
+        except exceptions.DatabaseError:
             mensaje_index = 0
-        else:
-            mensaje_index = message["mensaje_index"] + 1
 
     # Not to be misleading…
     if block_index == config.MEMPOOL_BLOCK_INDEX:
