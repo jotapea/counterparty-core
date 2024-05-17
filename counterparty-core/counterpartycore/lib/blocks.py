@@ -605,8 +605,10 @@ def initialise(db):
         [
             ["block_index"],
             ["block_index", "message_index"],
+            ["block_index", "mensaje_index"],
             ["mensaje_index"],
             ["category", "mensaje_index"],
+            ["category", "block_index", "mensaje_index"],
             ["event"],
         ],
     )
