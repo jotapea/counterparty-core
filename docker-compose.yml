@@ -141,6 +141,8 @@ services:
   app_flask:
     build:
       context: ./apps/python
+    volumes:
+      - data:/data
     ports: 
       - "3000:3000"
 
@@ -148,6 +150,8 @@ services:
   app_express:
     build:
       context: ./apps/nodejs
+    volumes:
+      - data:/data
     ports: 
       - "3001:3001"
 
