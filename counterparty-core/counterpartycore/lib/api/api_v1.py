@@ -739,6 +739,12 @@ class APIServer(threading.Thread):
         ######################
         # READ API
 
+        @dispatcher.add_method
+        def get_memmempool():
+            return {
+                'cached_response': memmempool_cached_response,
+            }
+
         # Generate dynamically get_{table} methods
         def generate_get_method(table):
             def get_method(**kwargs):
