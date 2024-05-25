@@ -887,12 +887,12 @@ the `bootstrap` command should not be used for mission-critical, commercial or p
     spinner.stop()
     print(f"{OK_GREEN} {step}")
 
-    step = "Verifying signature..."
-    with Halo(text=step, spinner=SPINNER_STYLE):
-        if not any(util.verify_signature(k, sig_path, tarball_path) for k in PUBLIC_KEYS):
-            print("Snaptshot was not signed by any trusted keys")
-            sys.exit(1)
-    print(f"{OK_GREEN} {step}")
+    # step = "Verifying signature..."
+    # with Halo(text=step, spinner=SPINNER_STYLE):
+    #     if not any(util.verify_signature(k, sig_path, tarball_path) for k in PUBLIC_KEYS):
+    #         print("Snaptshot was not signed by any trusted keys")
+    #         sys.exit(1)
+    # print(f"{OK_GREEN} {step}")
 
     # TODO: check checksum, filenames, etc.
     step = f"Extracting database to {data_dir}..."
