@@ -697,6 +697,11 @@ def start_all(args):
         api_status_poller.daemon = True
         api_status_poller.start()
 
+        # In-memory mempool.
+        in_memory_mempool = api_v1.MemMempool()
+        in_memory_mempool.daemon = True
+        in_memory_mempool.start()
+
         # API Server v1.
         api_server_v1 = api_v1.APIServer()
         api_server_v1.daemon = True

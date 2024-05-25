@@ -537,6 +537,177 @@ class APIStatusPoller(threading.Thread):
                 time.sleep(0.5)  # sleep for 0.5 seconds
 
 
+def get_running_info_shared(db):
+    latest_block_index = backend.getblockcount()
+
+    try:
+        api_util.check_last_parsed_block(db, latest_block_index)
+    except DatabaseError:
+        caught_up = False
+    else:
+        caught_up = True
+
+    try:
+        cursor = db.cursor()
+        blocks = list(
+            cursor.execute(
+                """SELECT * FROM blocks WHERE block_index = ?""",
+                (util.CURRENT_BLOCK_INDEX,),
+            )
+        )
+        assert len(blocks) == 1
+        last_block = blocks[0]
+        cursor.close()
+    except:  # noqa: E722
+        last_block = None
+
+    try:
+        last_message = ledger.last_message(db)
+    except:  # noqa: E722
+        last_message = None
+
+    try:
+        indexd_blocks_behind = backend.getindexblocksbehind()
+    except:  # noqa: E722
+        indexd_blocks_behind = latest_block_index if latest_block_index > 0 else 999999
+    indexd_caught_up = indexd_blocks_behind <= 1
+
+    server_ready = caught_up and indexd_caught_up
+
+    addrindexrs_version = get_addrindexrs_version().split(".")
+
+    return {
+        "server_ready": server_ready,
+        "db_caught_up": caught_up,
+        "bitcoin_block_count": latest_block_index,
+        "last_block": last_block,
+        "indexd_caught_up": indexd_caught_up,
+        "indexd_blocks_behind": indexd_blocks_behind,
+        "last_message_index": (last_message["message_index"] if last_message else -1),
+        "api_limit_rows": config.API_LIMIT_ROWS,
+        "running_testnet": config.TESTNET,
+        "running_regtest": config.REGTEST,
+        "running_testcoin": config.TESTCOIN,
+        "version_major": config.VERSION_MAJOR,
+        "version_minor": config.VERSION_MINOR,
+        "version_revision": config.VERSION_REVISION,
+        "addrindexrs_version_major": int(addrindexrs_version[0]),
+        "addrindexrs_version_minor": int(addrindexrs_version[1]),
+        "addrindexrs_version_revision": int(addrindexrs_version[2]),
+        "uptime": int(get_uptime()),
+        "dockerized": is_docker(),
+        "force_enabled": is_force_enabled(),
+    }
+
+# is updated by MemMempool ('maxmempool' bitcoin conf directly affects this, keeping 300MB default works well)
+# memmempool_txids_non_cntrprty = set()
+memmempool_txids_cntrprty = set()
+memmempool_cached_response = []
+
+class MemMempool(threading.Thread):
+    """In-memory mempool, maintains a ready-to-serve parsed transaction response."""
+    def __init__(self):
+        self.last_mempool_check = 0
+        threading.Thread.__init__(self)
+        self.stop_event = threading.Event()
+
+    def stop(self):
+        self.stop_event.set()
+
+    def run(self):
+        logger.info('Starting MemMempool.')
+        # global memmempool_txids_non_cntrprty
+        global memmempool_txids_cntrprty
+        global memmempool_cached_response
+        db = database.get_connection(read_only=True)
+
+        while self.stop_event.is_set() != True:
+
+            if time.time() - self.last_mempool_check > 1 * 60: # 1 minute since last check.
+
+                status = get_running_info_shared(db)
+                if status["server_ready"]:
+
+                    # TODO logs only showing in the first iteration
+                    # logger.info('Mempool processing start...')
+
+                    # different, now the mempool provides the transactions but they have no data (maybe because is still a wip)
+                    mempool_txs = db_query(db, "SELECT * FROM mempool")
+                    mempool_txids = []
+                    for tx_row in list(mempool_txs):
+                        mempool_txids.append(tx_row["tx_hash"])
+
+                    cached_txids = [] | memmempool_txids_cntrprty
+
+                    to_remove = set()
+                    for tx_hash in cached_txids:
+                        if tx_hash not in mempool_txids:
+                            to_remove.add(tx_hash)
+
+                    to_process = set()
+                    for tx_hash in mempool_txids:
+                        if tx_hash not in cached_txids:
+                            to_process.add(tx_hash)
+                    
+                    # mempool in db is already a subset, but does no harm to keep this
+                    batch_size = 500
+                    to_process_batch = set(itertools.islice(to_process, batch_size))
+                    to_add = {}
+                    for tx_hash in to_process_batch:
+                        tx_hex = None
+                        try:
+                            tx_hex = backend.getrawtransaction(tx_hash)
+                        except Exception as e:
+                            # TODO logs only showing in the first iteration
+                            logger.warning('Failed to fetch raw TX, continue; %s', (e, ))
+                            continue
+
+                        if tx_hex is None:
+                            continue
+ 
+                        source, destination, btc_amount, fee, data, extra = gettxinfo.get_tx_info(
+                            db,
+                            BlockchainParser().deserialize_tx(tx_hex),
+                            block_index=None,
+                        )
+                        # source, destination, btc_amount, fee, data, decoded_tx = blocks.get_tx_info(tx_hex)                        
+                        data_hex = None
+                        if data is not None:
+                            data_hex = util.hexlify(data)
+
+                        if data_hex is not None:
+                            to_add[tx_hash] = {
+                                "tx_hash": tx_hash,
+                                "source": source,
+                                "destination": destination,
+                                "btc_amount": btc_amount,
+                                "fee": fee,
+                                "data": data_hex,
+                                "extra": extra,
+                                # "decoded_tx": decoded_tx,
+                            }
+
+                    processed_txids_cntrprty = set(to_add.keys())
+                    # processed_txids_non_cntrprty = to_process_batch - processed_txids_cntrprty
+
+                    new_cached_response = []
+
+                    for cached_item in memmempool_cached_response:
+                        if cached_item["tx_hash"] not in to_remove:
+                            new_cached_response.append(cached_item)
+
+                    for key in to_add:
+                        new_cached_response.append(to_add[key])
+
+                    # memmempool_txids_non_cntrprty = (memmempool_txids_non_cntrprty - to_remove) | processed_txids_non_cntrprty
+                    memmempool_txids_cntrprty = (memmempool_txids_cntrprty - to_remove) | processed_txids_cntrprty        
+                    memmempool_cached_response = new_cached_response
+
+                    self.last_mempool_check = time.time()
+
+            time.sleep(config.BACKEND_POLL_INTERVAL)
+
+
 class APIServer(threading.Thread):
     """Handle JSON-RPC API calls."""
 
