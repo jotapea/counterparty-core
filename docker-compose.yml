@@ -80,62 +80,62 @@ services:
   # Testnet Services #
   ###################
 
-  bitcoind-testnet:
-    <<: *bitcoind-common
-    profiles:
-      - testnet
-    ports: 
-      - "18332:18332"
-    command: 
-      - "-chain=test"
-      - "-rpcallowip=0.0.0.0/0"
-      - "-rpcbind=0.0.0.0"
-      - "-rpcuser=rpc"
-      - "-rpcpassword=rpc"
-      - "-listen=1"
-      - "-server=1"
-      - "-printtoconsole=1"
-      - "-addresstype=legacy"
-      - "-txindex=1"
-      - "-prune=0"
-      - "-dbcache=4000"
-      - "-mempoolfullrbf=1"
+  # bitcoind-testnet:
+  #   <<: *bitcoind-common
+  #   profiles:
+  #     - testnet
+  #   ports: 
+  #     - "18332:18332"
+  #   command: 
+  #     - "-chain=test"
+  #     - "-rpcallowip=0.0.0.0/0"
+  #     - "-rpcbind=0.0.0.0"
+  #     - "-rpcuser=rpc"
+  #     - "-rpcpassword=rpc"
+  #     - "-listen=1"
+  #     - "-server=1"
+  #     - "-printtoconsole=1"
+  #     - "-addresstype=legacy"
+  #     - "-txindex=1"
+  #     - "-prune=0"
+  #     - "-dbcache=4000"
+  #     - "-mempoolfullrbf=1"
 
-  addrindexrs-testnet:
-    <<: *addrindexrs-common
-    profiles:
-      - testnet
-    links:
-      - bitcoind-testnet
-    ports:
-      - "18432:18432"
-    command:
-      - "--network=testnet"
-      - "--indexer-rpc-host=0.0.0.0"
-      - "--daemon-rpc-host=bitcoind-testnet"
-      - "--cookie=rpc:rpc"
-      - "-vvv"
-      - "--db-dir=/data/"
+  # addrindexrs-testnet:
+  #   <<: *addrindexrs-common
+  #   profiles:
+  #     - testnet
+  #   links:
+  #     - bitcoind-testnet
+  #   ports:
+  #     - "18432:18432"
+  #   command:
+  #     - "--network=testnet"
+  #     - "--indexer-rpc-host=0.0.0.0"
+  #     - "--daemon-rpc-host=bitcoind-testnet"
+  #     - "--cookie=rpc:rpc"
+  #     - "-vvv"
+  #     - "--db-dir=/data/"
 
-  counterparty-core-testnet:
-    <<: *counterparty-common
-    profiles:
-      - testnet
-    links:
-      - bitcoind-testnet
-      - addrindexrs-testnet
-    ports:
-      - "14000:14000"                                      # API v2
-      - "14100:14100"                                      # API v1
-    command:
-      - start
-      - "--testnet"
-      - "--backend-connect=bitcoind-testnet"
-      - "--indexd-connect=addrindexrs-testnet"
-      - "--rpc-host=0.0.0.0"
-      - "--api-host=0.0.0.0"
-      - "--catch-up=bootstrap"
-      #- "--verbose"
+  # counterparty-core-testnet:
+  #   <<: *counterparty-common
+  #   profiles:
+  #     - testnet
+  #   links:
+  #     - bitcoind-testnet
+  #     - addrindexrs-testnet
+  #   ports:
+  #     - "14000:14000"                                      # API v2
+  #     - "14100:14100"                                      # API v1
+  #   command:
+  #     - start
+  #     - "--testnet"
+  #     - "--backend-connect=bitcoind-testnet"
+  #     - "--indexd-connect=addrindexrs-testnet"
+  #     - "--rpc-host=0.0.0.0"
+  #     - "--api-host=0.0.0.0"
+  #     - "--catch-up=bootstrap"
+  #     #- "--verbose"
 
   # python (flask) app
   app_flask:
