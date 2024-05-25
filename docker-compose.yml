@@ -76,9 +76,9 @@ services:
       - "--no_telemetry"
       - "--verbose"
 
-  ###################
-  # Testnet Services #
-  ###################
+  # ###################
+  # # Testnet Services #
+  # ###################
 
   # bitcoind-testnet:
   #   <<: *bitcoind-common
@@ -136,6 +136,10 @@ services:
   #     - "--api-host=0.0.0.0"
   #     - "--catch-up=bootstrap"
   #     #- "--verbose"
+
+  ###################
+  # Apps #
+  ###################
 
   # python (flask) app
   app_flask:
