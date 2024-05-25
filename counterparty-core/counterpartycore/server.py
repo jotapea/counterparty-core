@@ -676,16 +676,17 @@ def start_all(args):
         # Backend.
         connect_to_backend()
 
-        if not config.NO_TELEMETRY:
-            logger.info("Telemetry enabled.")
-            telemetry_daemon = TelemetryDaemon(
-                interval=config.TELEMETRY_INTERVAL,
-                collector=TelemetryCollectorInfluxDB(db=database.get_connection(read_only=True)),
-                client=TelemetryClientInfluxDB(),
-            )
-            telemetry_daemon.start()
-        else:
-            logger.info("Telemetry disabled.")
+        logger.info("Telemetry disabled.")
+        # if not config.NO_TELEMETRY:
+        #     logger.info("Telemetry enabled.")
+        #     telemetry_daemon = TelemetryDaemon(
+        #         interval=config.TELEMETRY_INTERVAL,
+        #         collector=TelemetryCollectorInfluxDB(db=database.get_connection(read_only=True)),
+        #         client=TelemetryClientInfluxDB(),
+        #     )
+        #     telemetry_daemon.start()
+        # else:
+        #     logger.info("Telemetry disabled.")
 
         # Reset UTXO_LOCKS.  This previously was done in
         # initilise_config

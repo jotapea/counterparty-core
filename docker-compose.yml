@@ -87,7 +87,7 @@ services:
       - "--api-host=0.0.0.0"
       # - "--force" # doing too many things, better directly force in code
       # - "--catch-up=bootstrap"
-      - "--no_telemetry"
+      # - "--no_telemetry" # unrecognized arguments: --no_telemetry
       - "--verbose"
 
   # ###################
