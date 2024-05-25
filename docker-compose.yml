@@ -1,31 +1,31 @@
-x-bitcoind-common: &bitcoind-common
-  build:
-    context: ./bitcoin
-  stop_grace_period: 1m
-  volumes:
-    - data:/root/.bitcoin
-  restart: unless-stopped
+# x-bitcoind-common: &bitcoind-common
+#   build:
+#     context: ./bitcoin
+#   stop_grace_period: 1m
+#   volumes:
+#     - data:/root/.bitcoin
+#   restart: unless-stopped
 
-x-addrindexrs-common: &addrindexrs-common
-  image: counterparty/addrindexrs:v0.4.6
-  volumes:
-    - data:/root/.bitcoin
-    - data:/data
-  environment:
-    - ADDRINDEXRS_JSONRPC_IMPORT=${ADDRINDEXRS_JSONRPC_IMPORT:-false}
-  restart: unless-stopped
+# x-addrindexrs-common: &addrindexrs-common
+#   image: counterparty/addrindexrs:v0.4.6
+#   volumes:
+#     - data:/root/.bitcoin
+#     - data:/data
+#   environment:
+#     - ADDRINDEXRS_JSONRPC_IMPORT=${ADDRINDEXRS_JSONRPC_IMPORT:-false}
+#   restart: unless-stopped
 
-x-counterparty-common: &counterparty-common
-  build:
-    context: .
-  stop_grace_period: 1m
-  volumes:
-    - data:/root/.bitcoin
-    - data:/data
-  environment:
-    - XDG_DATA_HOME=/data/
-    - XDG_LOG_HOME=/data/
-  restart: unless-stopped
+# x-counterparty-common: &counterparty-common
+#   build:
+#     context: .
+#   stop_grace_period: 1m
+#   volumes:
+#     - data:/root/.bitcoin
+#     - data:/data
+#   environment:
+#     - XDG_DATA_HOME=/data/
+#     - XDG_LOG_HOME=/data/
+#   restart: unless-stopped
 
 services:
 
@@ -34,16 +34,23 @@ services:
   ####################
 
   bitcoind:
-    <<: *bitcoind-common
-    profiles:
-      - mainnet
+    build:
+      context: ./bitcoin
+    stop_grace_period: 1m
+    volumes:
+      - data:/root/.bitcoin
+    restart: unless-stopped
     ports: 
       - "8332:8332"
 
   addrindexrs:
-    <<: *addrindexrs-common
-    profiles:
-      - mainnet
+    image: counterparty/addrindexrs:v0.4.6
+    volumes:
+      - data:/root/.bitcoin
+      - data:/data
+    environment:
+      - ADDRINDEXRS_JSONRPC_IMPORT=${ADDRINDEXRS_JSONRPC_IMPORT:-false}
+    restart: unless-stopped
     links:
       - bitcoind
     ports:
@@ -56,9 +63,16 @@ services:
       - "--db-dir=/data/"
 
   counterparty-core:
-    <<: *counterparty-common
-    profiles:
-      - mainnet
+    build:
+      context: .
+    stop_grace_period: 1m
+    volumes:
+      - data:/root/.bitcoin
+      - data:/data
+    environment:
+      - XDG_DATA_HOME=/data/
+      - XDG_LOG_HOME=/data/
+    restart: unless-stopped
     links:
       - bitcoind
       - addrindexrs
