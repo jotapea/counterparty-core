@@ -631,29 +631,16 @@ class MemMempool(threading.Thread):
                     # TODO logs only showing in the first iteration
                     # logger.info('Mempool processing start...')
 
+                    logger.info("MemMempool caching...")
+
                     # different, now the mempool provides the transactions but they have no data (maybe because is still a wip)
                     mempool_txs = db_query(db, "SELECT * FROM mempool")
                     mempool_txids = []
                     for tx_row in list(mempool_txs):
                         mempool_txids.append(tx_row["tx_hash"])
 
-                    cached_txids = [] | memmempool_txids_cntrprty
-
-                    to_remove = set()
-                    for tx_hash in cached_txids:
-                        if tx_hash not in mempool_txids:
-                            to_remove.add(tx_hash)
-
-                    to_process = set()
-                    for tx_hash in mempool_txids:
-                        if tx_hash not in cached_txids:
-                            to_process.add(tx_hash)
-                    
-                    # mempool in db is already a subset, but does no harm to keep this
-                    batch_size = 500
-                    to_process_batch = set(itertools.islice(to_process, batch_size))
                     to_add = {}
-                    for tx_hash in to_process_batch:
+                    for tx_hash in mempool_txids:
                         tx_hex = None
                         try:
                             tx_hex = backend.getrawtransaction(tx_hash)
@@ -664,13 +651,13 @@ class MemMempool(threading.Thread):
 
                         if tx_hex is None:
                             continue
- 
+
                         source, destination, btc_amount, fee, data, extra = gettxinfo.get_tx_info(
                             db,
                             BlockchainParser().deserialize_tx(tx_hex),
                             block_index=None,
                         )
-                        # source, destination, btc_amount, fee, data, decoded_tx = blocks.get_tx_info(tx_hex)                        
+
                         data_hex = None
                         if data is not None:
                             data_hex = util.hexlify(data)
@@ -684,23 +671,12 @@ class MemMempool(threading.Thread):
                                 "fee": fee,
                                 "data": data_hex,
                                 "extra": extra,
-                                # "decoded_tx": decoded_tx,
                             }
 
-                    processed_txids_cntrprty = set(to_add.keys())
-                    # processed_txids_non_cntrprty = to_process_batch - processed_txids_cntrprty
-
                     new_cached_response = []
-
-                    for cached_item in memmempool_cached_response:
-                        if cached_item["tx_hash"] not in to_remove:
-                            new_cached_response.append(cached_item)
-
                     for key in to_add:
                         new_cached_response.append(to_add[key])
 
-                    # memmempool_txids_non_cntrprty = (memmempool_txids_non_cntrprty - to_remove) | processed_txids_non_cntrprty
-                    memmempool_txids_cntrprty = (memmempool_txids_cntrprty - to_remove) | processed_txids_cntrprty        
                     memmempool_cached_response = new_cached_response
 
                     self.last_mempool_check = time.time()
