@@ -600,8 +600,6 @@ def get_running_info_shared(db):
     }
 
 # is updated by MemMempool ('maxmempool' bitcoin conf directly affects this, keeping 300MB default works well)
-# memmempool_txids_non_cntrprty = set()
-memmempool_txids_cntrprty = set()
 memmempool_cached_response = []
 
 class MemMempool(threading.Thread):
@@ -616,8 +614,6 @@ class MemMempool(threading.Thread):
 
     def run(self):
         logger.info('Starting MemMempool.')
-        # global memmempool_txids_non_cntrprty
-        global memmempool_txids_cntrprty
         global memmempool_cached_response
         db = database.get_connection(read_only=True)
 
