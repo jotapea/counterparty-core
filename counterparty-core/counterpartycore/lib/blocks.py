@@ -327,7 +327,7 @@ def parse_block(
             "ledger_hash": new_ledger_hash,
             "txlist_hash": new_txlist_hash,
             "messages_hash": new_messages_hash,
-            "duration": duration
+            # "duration": duration
         },
     )
 
