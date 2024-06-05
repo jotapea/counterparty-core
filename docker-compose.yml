@@ -15,24 +15,36 @@ services:
     ports: 
       - "8332:8332"
 
-  addrindexrs:
-    image: counterparty/addrindexrs:v0.4.6
+  electrs:
+    build:
+      context: ./electrs
     volumes:
       - data:/root/.bitcoin
       - data:/data
-    environment:
-      - ADDRINDEXRS_JSONRPC_IMPORT=${ADDRINDEXRS_JSONRPC_IMPORT:-false}
     restart: unless-stopped
     links:
       - bitcoind
     ports:
-      - "8432:8432"
-    command:
-      - "--indexer-rpc-host=0.0.0.0"
-      - "--daemon-rpc-host=bitcoind"
-      - "--cookie=rpc:rpc"
-      - "-vvv"
-      - "--db-dir=/data/"
+      - "50001:50001"
+
+  # addrindexrs:
+  #   image: counterparty/addrindexrs:v0.4.6
+  #   volumes:
+  #     - data:/root/.bitcoin
+  #     - data:/data
+  #   environment:
+  #     - ADDRINDEXRS_JSONRPC_IMPORT=${ADDRINDEXRS_JSONRPC_IMPORT:-false}
+  #   restart: unless-stopped
+  #   links:
+  #     - bitcoind
+  #   ports:
+  #     - "8432:8432"
+  #   command:
+  #     - "--indexer-rpc-host=0.0.0.0"
+  #     - "--daemon-rpc-host=bitcoind"
+  #     - "--cookie=rpc:rpc"
+  #     - "-vvv"
+  #     - "--db-dir=/data/"
 
   counterparty-core:
     build:
@@ -47,14 +59,16 @@ services:
     restart: unless-stopped
     links:
       - bitcoind
-      - addrindexrs
+      - electrs
+      # - addrindexrs
     ports:
       - "4000:4000"                                        # API v2
       - "4100:4100"                                        # API v1
     command:
       - start
       - "--backend-connect=bitcoind"
-      - "--indexd-connect=addrindexrs"
+      - "--indexd-connect=electrs"
+      # - "--indexd-connect=addrindexrs"
       - "--rpc-host=0.0.0.0"
       - "--api-host=0.0.0.0"
       # - "--force" # doing too many things, better directly force in code

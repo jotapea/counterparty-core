@@ -225,7 +225,8 @@ def initialise_config(
     # THINGS WE CONNECT TO
 
     # Backend name
-    config.BACKEND_NAME = "addrindexrs"
+    config.BACKEND_NAME = "electrs"
+    # config.BACKEND_NAME = "addrindexrs"
 
     # Backend RPC host (Bitcoin Core)
     if backend_connect:
@@ -633,6 +634,27 @@ def connect_to_backend():
         backend.getblockcount()
 
 
+# 
+def connect_to_electrs():
+    step = "Connecting to `electrs`..."
+    with Halo(text=step, spinner=SPINNER_STYLE):
+        util.CURRENT_BLOCK_INDEX = 0
+        backend.backend()
+        check_electrs = {}
+        while check_electrs == {}:
+            check_address = (
+                "mrHFGUKSiNMeErqByjX97qPKfumdZxe6mC"
+                if config.TESTNET
+                else "1GsjsKKT4nH4GPmDnaxaZEDWgoBpmexwMA"
+            )
+            check_electrs = backend.get_oldest_tx(check_address, 99999999999)
+            if check_electrs == {}:
+                logger.info("`electrs` is not ready. Waiting one second.")
+                time.sleep(1)
+    print(f"{OK_GREEN} {step}")
+# 
+
+
 def connect_to_addrindexrs():
     step = "Connecting to `addrindexrs`..."
     with Halo(text=step, spinner=SPINNER_STYLE):
@@ -731,7 +753,8 @@ def start_all(args):
 
 
 def reparse(block_index):
-    connect_to_addrindexrs()
+    connect_to_electrs()
+    # connect_to_addrindexrs()
     db = initialise_db()
     try:
         blocks.reparse(db, block_index=block_index)

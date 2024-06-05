@@ -13,7 +13,8 @@ VERSION_MINOR = int(version[1])
 VERSION_REVISION = int(version[2])
 VERSION_PRE_RELEASE = "-".join(VERSION_STRING.split("-")[1:])
 
-ADDRINDEXRS_VERSION = "0.4.6"
+ADDRINDEXRS_VERSION = "0.10.5"
+# ADDRINDEXRS_VERSION = "0.4.6"
 
 # When updating to a new verion, we are making a rollback if major version changes.
 # If minor version changes and if needed, we are making a reparse from a given block.
@@ -65,7 +66,8 @@ DEFAULT_BACKEND_PORT = 8332
 
 DEFAULT_INDEXD_PORT_REGTEST = 28432
 DEFAULT_INDEXD_PORT_TESTNET = 18432
-DEFAULT_INDEXD_PORT = 8432
+DEFAULT_INDEXD_PORT = 50001
+# DEFAULT_INDEXD_PORT = 8432
 
 UNSPENDABLE_REGTEST = "mvCounterpartyXXXXXXXXXXXXXXW24Hef"
 UNSPENDABLE_TESTNET = "mvCounterpartyXXXXXXXXXXXXXXW24Hef"

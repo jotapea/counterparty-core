@@ -7,7 +7,8 @@ import bitcoin as bitcoinlib
 from bitcoin.core import CBlock
 
 from counterpartycore.lib import config, script, util
-from counterpartycore.lib.backend import addrindexrs  # noqa: F401
+from counterpartycore.lib.backend import electrs  # noqa: F401
+# from counterpartycore.lib.backend import addrindexrs  # noqa: F401
 
 logger = logging.getLogger(config.LOGGER_NAME)
 
