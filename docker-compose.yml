@@ -1,4 +1,27 @@
 
+# # ########
+# # special instructions
+
+# git clone https://github.com/jotapea/counterparty-core.git
+
+# # bitcoin core 24 in this case
+# pico counterparty-core/bitcoin/Dockerfile
+
+# git clone https://github.com/romanz/electrs.git
+
+# # add config
+# mv counterparty-core/electrs/config.toml electrs/config.toml
+
+# # replace Dockerfile
+# rm -rf electrs/Dockerfile
+# mv counterparty-core/electrs/Dockerfile electrs/Dockerfile
+
+# # replace electrs
+# rm -rf counterparty-core/electrs
+# mv electrs counterparty-core/electrs
+
+# # ########
+
 services:
 
   ####################
