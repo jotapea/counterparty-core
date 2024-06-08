@@ -91,90 +91,60 @@ def compose(db, source: str, quantity: int, overburn: bool = False):
     return (source, [(destination, quantity)], None)
 
 
-def parse(db, tx, mainnet_burns, message=None):
-    burn_parse_cursor = db.cursor()
+def parse(db, tx, message=None):
+    problems = []
+    status = "valid"
 
-    if config.TESTNET or config.REGTEST:
-        problems = []
-        status = "valid"
+    problems = validate(
+        db,
+        tx["source"],
+        tx["destination"],
+        tx["btc_amount"],
+        tx["block_index"],
+        overburn=False,
+    )
+    if problems:
+        status = "invalid: " + "; ".join(problems)
 
-        if status == "valid":
-            problems = validate(
-                db,
-                tx["source"],
-                tx["destination"],
-                tx["btc_amount"],
-                tx["block_index"],
-                overburn=False,
-            )
-            if problems:
-                status = "invalid: " + "; ".join(problems)
-
-            if tx["btc_amount"] != None:  # noqa: E711
-                sent = tx["btc_amount"]
-            else:
-                sent = 0
-
-        if status == "valid":
-            # Calculate quantity of XCP earned. (Maximum 1 BTC in total, ever.)
-            burns = ledger.get_burns(db, tx["source"])
-            already_burned = sum([burn["burned"] for burn in burns])
-            one = 1 * config.UNIT
-            max_burn = one - already_burned
-            if sent > max_burn:
-                burned = max_burn  # Exceeded maximum burn; earn what you can.
-            else:
-                burned = sent
-
-            total_time = config.BURN_END - config.BURN_START
-            partial_time = config.BURN_END - tx["block_index"]
-            multiplier = 1000 + (500 * Fraction(partial_time, total_time))
-            earned = round(burned * multiplier)
-
-            # Credit source address with earned XCP.
-            ledger.credit(
-                db,
-                tx["source"],
-                config.XCP,
-                earned,
-                tx["tx_index"],
-                action="burn",
-                event=tx["tx_hash"],
-            )
-        else:
-            burned = 0
-            earned = 0
-
-        tx_index = tx["tx_index"]
-        tx_hash = tx["tx_hash"]
-        block_index = tx["block_index"]
-        source = tx["source"]
-
+    if tx["btc_amount"] != None:  # noqa: E711
+        sent = tx["btc_amount"]
     else:
-        # Mainnet burns are hard‐coded.
+        sent = 0
 
-        try:
-            line = mainnet_burns[tx["tx_hash"]]
-        except KeyError:
-            return
+    if status == "valid":
+        # Calculate quantity of XCP earned. (Maximum 1 BTC in total, ever.)
+        burns = ledger.get_burns(db, tx["source"])
+        already_burned = sum([burn["burned"] for burn in burns])
+        one = 1 * config.UNIT
+        max_burn = one - already_burned
+        if sent > max_burn:
+            burned = max_burn  # Exceeded maximum burn; earn what you can.
+        else:
+            burned = sent
 
+        total_time = config.BURN_END - config.BURN_START
+        partial_time = config.BURN_END - tx["block_index"]
+        multiplier = 1000 + (500 * Fraction(partial_time, total_time))
+        earned = round(burned * multiplier)
+
+        # Credit source address with earned XCP.
         ledger.credit(
             db,
-            line["source"],
+            tx["source"],
             config.XCP,
-            int(line["earned"]),
+            earned,
             tx["tx_index"],
             action="burn",
-            event=line["tx_hash"],
+            event=tx["tx_hash"],
         )
+    else:
+        burned = 0
+        earned = 0
 
-        tx_index = tx["tx_index"]
-        tx_hash = line["tx_hash"]
-        block_index = line["block_index"]
-        source = line["source"]
-        burned = line["burned"]
-        earned = line["earned"]
-        status = "valid"
+    tx_index = tx["tx_index"]
+    tx_hash = tx["tx_hash"]
+    block_index = tx["block_index"]
+    source = tx["source"]
 
     # Add parsed transaction to message-type–specific table.
     # TODO: store sent in table
@@ -192,8 +162,6 @@ def parse(db, tx, mainnet_burns, message=None):
     else:
         logger.debug(f"Not storing [burn] tx [{tx['tx_hash']}]: {status}")
         logger.debug(f"Bindings: {json.dumps(bindings)}")
-
-    burn_parse_cursor.close()
 
 
 # vim: tabstop=8 expandtab shiftwidth=4 softtabstop=4

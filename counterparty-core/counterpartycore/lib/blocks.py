@@ -89,13 +89,6 @@ TABLES = ["balances", "credits", "debits", "messages"] + [
     "dispenser_refills",
 ]
 
-MAINNET_BURNS = {}
-CURR_DIR = os.path.dirname(os.path.realpath(__file__))
-with open(CURR_DIR + "/../mainnet_burns.csv", "r") as f:
-    mainnet_burns_reader = csv.DictReader(f)
-    for line in mainnet_burns_reader:
-        MAINNET_BURNS[line["tx_hash"]] = line
-
 OK_GREEN = colored("[OK]", "green")
 SPINNER_STYLE = "bouncingBar"
 
@@ -115,7 +108,7 @@ def parse_tx(db, tx):
 
             # Burns.
             if tx["destination"] == config.UNSPENDABLE:
-                burn.parse(db, tx, MAINNET_BURNS)
+                burn.parse(db, tx)
                 return
 
             if len(tx["data"]) > 1:
